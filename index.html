@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍯 HoneyBee Miner - Player Interface 🐝</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .action-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .action-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        input[type="number"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .wallet-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .earnings-display {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-btn {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .quick-amounts {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍯 HoneyBee Miner 🐝</h1>
+            <p>Build your bee empire and harvest honey rewards!</p>
+        </div>
+
+        <div id="walletSection" class="wallet-section">
+            <h3>🔌 Connect Your Wallet</h3>
+            <p>Connect your MetaMask or compatible wallet to start playing!</p>
+            <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+        </div>
+
+        <div id="gameInterface" class="hidden">
+            <div class="earnings-display">
+                <h3>💰 Your Earnings Potential</h3>
+                <div id="earningsInfo">Connect wallet to see earnings...</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="beesCount">0</div>
+                    <div class="stat-label">🐝 Your Bees</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="honeyCount">0</div>
+                    <div class="stat-label">🍯 Available Honey</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="honeyValue">0.000</div>
+                    <div class="stat-label">💎 Honey Value (BNB)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="walletBalance">0.000</div>
+                    <div class="stat-label">💳 Your BNB Balance</div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <h3>🛒 Buy Bees</h3>
+                <p>Invest BNB to buy bees that will produce honey for you!</p>
+                <div class="quick-amounts">
+                    <div class="quick-btn" onclick="setBuyAmount(0.01)">0.01 BNB</div>
+                    <div class="quick-btn" onclick="setBuyAmount(0.05)">0.05 BNB</div>
+                    <div class="quick-btn" onclick="setBuyAmount(0.1)">0.1 BNB</div>
+                    <div class="quick-btn" onclick="setBuyAmount(0.5)">0.5 BNB</div>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="buyAmount" placeholder="Amount in BNB" step="0.001" min="0.001">
+                    <button id="buyBtn" class="btn btn-primary">Buy Bees 🐝</button>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <h3>🌾 Harvest Honey</h3>
+                <p>Convert your accumulated honey directly into more bees! (FREE - No BNB needed)</p>
+                <button id="harvestBtn" class="btn btn-success">Harvest Honey → More Bees 🍯➡️🐝</button>
+            </div>
+
+            <div class="action-section">
+                <h3>💰 Sell Honey</h3>
+                <p>Convert your honey back to BNB and withdraw to your wallet</p>
+                <button id="sellBtn" class="btn btn-warning">Sell All Honey for BNB 💸</button>
+            </div>
+
+            <div class="action-section">
+                <h3>🔄 Compound Strategy</h3>
+                <p>Sell honey for BNB, then immediately reinvest in more bees!</p>
+                <button id="compoundBtn" class="btn btn-primary">Compound (Sell + Buy More) 🔄</button>
+            </div>
+        </div>
+
+        <div id="statusMessages"></div>
+    </div>
+
+    <script>
+        // CONTRACT CONFIGURATION - REPLACE WITH YOUR VALUES
+        const CONTRACT_ADDRESS = '0x8713fe5f68b5a11252820d191eb323fe077ad9c9'; // Replace with your deployed contract address
+        const CEO_ADDRESS = '0x6f058432E7634c09D475C9f2A8632704ff6D3123'; // Replace with your wallet address (for referrals)
+        
+        const CONTRACT_ABI = [
+            "function getMyHoney() public view returns (uint256)",
+            "function getMyBees() public view returns (uint256)",
+            "function calculateHoneySell(uint256 honey) public view returns (uint256)",
+            "function sellHoney() public",
+            "function buyBees(address ref) public payable",
+            "function harvestHoney(address ref) public",
+            "function getBalance() public view returns (uint256)",
+            "function initialized() public view returns (bool)"
+        ];
+
+        let provider, signer, contract, userAddress;
+
+        // Connect Wallet
+        document.getElementById('connectBtn').addEventListener('click', connectWallet);
+
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    showStatus('Please install MetaMask!', 'error');
+                    return;
+                }
+
+                // Request account access
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Create ethers provider
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                // Create contract instance
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                // Check if we're on BSC
+                const network = await provider.getNetwork();
+                if (network.chainId !== 56) {
+                    showStatus('Please switch to Binance Smart Chain (BSC) network!', 'error');
+                    return;
+                }
+
+                showStatus(`Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`, 'success');
+                
+                document.getElementById('walletSection').classList.add('hidden');
+                document.getElementById('gameInterface').classList.remove('hidden');
+                
+                // Load user data
+                await updateStats();
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+            } catch (error) {
+                showStatus(`Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('buyBtn').addEventListener('click', buyBees);
+            document.getElementById('harvestBtn').addEventListener('click', harvestHoney);
+            document.getElementById('sellBtn').addEventListener('click', sellHoney);
+            document.getElementById('compoundBtn').addEventListener('click', compound);
+        }
+
+        function setBuyAmount(amount) {
+            document.getElementById('buyAmount').value = amount;
+        }
+
+        async function updateStats() {
+            try {
+                const [bees, honey, walletBalance] = await Promise.all([
+                    contract.getMyBees(),
+                    contract.getMyHoney(),
+                    signer.getBalance()
+                ]);
+                
+                let honeyValue = ethers.BigNumber.from(0);
+                if (honey.gt(0)) {
+                    honeyValue = await contract.calculateHoneySell(honey);
+                }
+
+                document.getElementById('beesCount').textContent = bees.toString();
+                document.getElementById('honeyCount').textContent = honey.toString();
+                document.getElementById('honeyValue').textContent = ethers.utils.formatEther(honeyValue);
+                document.getElementById('walletBalance').textContent = parseFloat(ethers.utils.formatEther(walletBalance)).toFixed(4);
+
+                // Update earnings info
+                if (bees.gt(0)) {
+                    const honeyPerDay = bees.mul(86400); // 1 honey per second per bee
+                    document.getElementById('earningsInfo').innerHTML = `
+                        📈 Your ${bees.toString()} bees produce ~${honeyPerDay.toString()} honey per day!<br>
+                        💰 Current honey worth: ${parseFloat(ethers.utils.formatEther(honeyValue)).toFixed(6)} BNB
+                    `;
+                } else {
+                    document.getElementById('earningsInfo').textContent = 'Buy your first bees to start earning honey!';
+                }
+                
+            } catch (error) {
+                showStatus(`Error loading stats: ${error.message}`, 'error');
+            }
+        }
+
+        async function buyBees() {
+            try {
+                const amount = document.getElementById('buyAmount').value;
+                if (!amount || parseFloat(amount) <= 0) {
+                    showStatus('Please enter a valid BNB amount', 'error');
+                    return;
+                }
+
+                document.getElementById('buyBtn').disabled = true;
+                showStatus('Buying bees... Please confirm transaction in wallet', 'info');
+
+                const tx = await contract.buyBees(CEO_ADDRESS, {
+                    value: ethers.utils.parseEther(amount),
+                    gasLimit: 400000
+                });
+
+                showStatus(`Transaction submitted: ${tx.hash}`, 'info');
+                await tx.wait();
+                
+                showStatus(`✅ Successfully bought bees with ${amount} BNB!`, 'success');
+                await updateStats();
+                
+            } catch (error) {
+                showStatus(`Buy failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('buyBtn').disabled = false;
+            }
+        }
+
+        async function harvestHoney() {
+            try {
+                document.getElementById('harvestBtn').disabled = true;
+                showStatus('Harvesting honey... Please confirm transaction', 'info');
+
+                const tx = await contract.harvestHoney(CEO_ADDRESS, {
+                    gasLimit: 300000
+                });
+
+                showStatus(`Transaction submitted: ${tx.hash}`, 'info');
+                await tx.wait();
+                
+                showStatus('✅ Honey harvested successfully! Your honey converted to more bees!', 'success');
+                await updateStats();
+                
+            } catch (error) {
+                showStatus(`Harvest failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('harvestBtn').disabled = false;
+            }
+        }
+
+        async function sellHoney() {
+            try {
+                document.getElementById('sellBtn').disabled = true;
+                showStatus('Selling honey... Please confirm transaction', 'info');
+
+                const tx = await contract.sellHoney({
+                    gasLimit: 300000
+                });
+
+                showStatus(`Transaction submitted: ${tx.hash}`, 'info');
+                await tx.wait();
+                
+                showStatus('✅ Honey sold successfully! BNB added to your wallet!', 'success');
+                await updateStats();
+                
+            } catch (error) {
+                showStatus(`Sell failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('sellBtn').disabled = false;
+            }
+        }
+
+        async function compound() {
+            try {
+                document.getElementById('compoundBtn').disabled = true;
+                showStatus('Step 1/2: Selling honey for BNB...', 'info');
+
+                // Step 1: Sell honey
+                const sellTx = await contract.sellHoney({
+                    gasLimit: 300000
+                });
+                await sellTx.wait();
+
+                showStatus('Step 2/2: Buying more bees with the BNB...', 'info');
+
+                // Wait a bit and get updated balance
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const balance = await signer.getBalance();
+                const gasReserve = ethers.utils.parseEther("0.005");
+                const buyAmount = balance.sub(gasReserve);
+
+                if (buyAmount.lte(0)) {
+                    showStatus('Not enough BNB to compound after gas reserve', 'error');
+                    return;
+                }
+
+                // Step 2: Buy more bees
+                const buyTx = await contract.buyBees(CEO_ADDRESS, {
+                    value: buyAmount,
+                    gasLimit: 400000
+                });
+                await buyTx.wait();
+                
+                showStatus('✅ Compound successful! Sold honey and bought more bees!', 'success');
+                await updateStats();
+                
+            } catch (error) {
+                showStatus(`Compound failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('compoundBtn').disabled = false;
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessages');
+            const statusElement = document.createElement('div');
+            statusElement.className = `status ${type}`;
+            statusElement.textContent = message;
+            
+            statusDiv.appendChild(statusElement);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                statusElement.remove();
+            }, 5000);
+            
+            // Scroll to show status
+            statusElement.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(() => {
+            if (contract && userAddress) {
+                updateStats();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
